@@ -173,6 +173,20 @@
 #define BOARD_HAS_CRYSTAL (0)
 #endif
 
+#ifndef BOARD_XOSC_FREQ_HZ
+  // 0 Indicates XOSC is not used.
+  #define BOARD_XOSC_FREQ_HZ (0)
+#endif
+
+#if BOARD_XOSC_FREQ_HZ != 0
+  #ifndef BOARD_XOSC_IS_CRYSTAL
+    #error "BOARD_XOSC_IS_CRYSTAL must be defined to 0 or 1 if BOARD_XOSC_FREQ_HZ is not 0"
+  #endif
+#else
+  // Doesn't matter what the value is in this case.
+  #define BOARD_XOSC_IS_CRYSTAL (0)
+#endif
+
 // if CALIBRATE_CRYSTALLESS is requested, make room for storing
 // calibration data generated from external USB.
 #ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
