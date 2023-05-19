@@ -176,6 +176,12 @@
 #ifndef BOARD_XOSC_FREQ_HZ
   // 0 Indicates XOSC is not used.
   #define BOARD_XOSC_FREQ_HZ (0)
+#else
+  // For now, only allow external clock sources that divide cleanly into
+  // the system clock frequency of 120 MHz
+  #if (120000000 % BOARD_XOSC_FREQ_HZ) != 0
+    #error "BOARD_XOSC_FREQ_HZ must be an integer factor of 120 MHz"
+  #endif
 #endif
 
 #if BOARD_XOSC_FREQ_HZ != 0
