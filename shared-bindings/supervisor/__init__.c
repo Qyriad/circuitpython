@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 #include <string.h>
+#include <assert.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -219,6 +220,30 @@ mp_obj_t supervisor_ticks_ms(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 
+// TICKS_PERIOD = 1 << 29
+const int TICKS_PERIOD = 0x20000000;
+// TICKS_HALFPERIOD = TICKS_PERIOD / 2
+const int TICKS_HALFPERIOD = 0x10000000;
+// TICKS_MAX = TICKS_PERIOD - 1
+const int TICKS_MAX = 0x1fffffff;
+
+// Statically check the math, since we have to use magic constants everywhere here.
+static_assert(0x20000000 == (1 << 29), "TICKS_PERIOD math is wrong");
+static_assert(0x10000000 == (0x20000000 / 2), "TICKS_HALFPERIOD math is wrong");
+static_assert(0x1fffffff == (0x20000000 - 1), "TICKS_MAX math is wrong");
+
+mp_obj_t supervisor_ticks_diff(mp_obj_t ticks_lhs, mp_obj_t ticks_rhs) {
+
+    mp_int_t lhs = mp_obj_get_int(ticks_lhs);
+    mp_int_t rhs = mp_obj_get_int(ticks_rhs);
+
+    int diff = (lhs - rhs) & TICKS_MAX;
+    diff = ((diff + TICKS_HALFPERIOD) & TICKS_MAX) - TICKS_HALFPERIOD;
+
+    return mp_obj_new_int(diff);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(supervisor_ticks_diff_obj, supervisor_ticks_diff);
+
 //| def get_previous_traceback() -> Optional[str]:
 //|     """If the last vm run ended with an exception (including the KeyboardInterrupt caused by
 //|     CTRL-C), returns the traceback as a string.
@@ -343,6 +368,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&supervisor_ticks_diff_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_terminal),  MP_ROM_PTR(&supervisor_reset_terminal_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_usb_identification),  MP_ROM_PTR(&supervisor_set_usb_identification_obj) },

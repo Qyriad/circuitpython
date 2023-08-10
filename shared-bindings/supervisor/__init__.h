@@ -36,6 +36,7 @@
 extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
 extern supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj;
 extern mp_obj_t supervisor_ticks_ms(void);
+extern mp_obj_t supervisor_ticks_diff(mp_obj_t ticks_lhs, mp_obj_t ticks_rhs);
 
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H
